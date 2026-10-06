@@ -1,0 +1,76 @@
+# ==========================
+# Compilazione C
+# ==========================
+*.o
+*.a
+*.so
+*.out
+*.exe
+
+# Eseguibili
+ising2d
+ising
+main
+
+# Directory di build (se la usi)
+build/
+
+# ==========================
+# Python
+# ==========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Ambienti virtuali
+venv/
+.venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ==========================
+# Output simulazioni
+# ==========================
+results/
+data/*.csv
+data/raw/
+data/tmp/
+*.csv
+
+# ==========================
+# Grafici generati
+# ==========================
+analysis/figures/
+analysis/plots/
+
+# ==========================
+# Report compilati
+# ==========================
+report/*.aux
+report/*.log
+report/*.out
+report/*.toc
+report/*.lof
+report/*.lot
+report/*.fls
+report/*.fdb_latexmk
+report/*.synctex.gz
+report/*.pdf
+
+# ==========================
+# Sistema
+# ==========================
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# CLion
+.idea/
+
+# Vim
+*.swp
