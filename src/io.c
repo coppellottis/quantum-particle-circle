@@ -39,6 +39,27 @@ void write_metadata(const char* sim_name, int phase, double fixed_val,
     return;
 }
 
+void write_metadata_pt(const char* sim_name, int N, int M, double* a_array, double* beta_array, int n_measures) {
+    char filename[512];
+    snprintf(filename, sizeof(filename), "data/%s/metadata.csv", sim_name);
+
+    FILE* file = fopen(filename, "w");
+    if (file == NULL) {
+        perror("Errore nella creazione di metadata.csv per il Parallel Tempering");
+        return;
+    }
+
+    // Intestazione compatibile con analyze_3.py (che cerca N, a, beta)
+    fprintf(file, "N,a,beta,n_measures\n");
+
+    // Genera una riga per ogni singola replica PT
+    for (int k = 0; k < M; k++) {
+        fprintf(file, "%d,%.10f,%.10f,%d\n", N, a_array[k], beta_array[k], n_measures);
+    }
+
+    fclose(file);
+}
+
 FILE* open_measurement_file(const char* sim_name, int N, double a, double beta) {
     char filename[256];
     snprintf(filename, sizeof(filename), "data/%s/N%d_a%.4f_beta%.4f.csv", sim_name, N, a, beta);

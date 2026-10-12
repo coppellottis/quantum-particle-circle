@@ -90,13 +90,22 @@ int main(void){
             beta_array[k] = beta_min + k * (beta_max - beta_min) / (M > 1 ? M - 1 : 1);
             a_array[k] = beta_array[k] / (double)N;
             pcg32_srandom_r(&rngs[k], 42u ^ (uint64_t)k, 54u ^ (uint64_t)N);
-            replicas[k] = init_polymer(N, false, &rngs[k]);
+            bool hot_start = true;
+            replicas[k] = init_polymer(N, hot_start, &rngs[k]);
         }
+
+        // --- SALVATAGGIO METADATI PER ANALYZE.PY ---
+        write_metadata_pt(sim_name, N, M, a_array, beta_array, n_measures);
 
         omp_set_num_threads(M);
 
         printf("\nAvvio simulazione PT con %d repliche...\n", M);
+        progress_init(1, 1);
+
         simulation_pt(replicas, a_array, beta_array, M, n_measures, sim_name, rngs);
+
+        progress_job_done();
+        progress_finish();
 
         for(int k = 0; k < M; k++) free_polymer(replicas[k]);
         free(replicas); 

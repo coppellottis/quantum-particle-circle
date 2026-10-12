@@ -16,5 +16,6 @@
     // writes its header row. The caller owns the returned FILE* and must
     // fclose() it.
     FILE* open_measurement_file(const char* sim_name, int N, double a, double beta);
-
+    void write_metadata_pt(const char* sim_name, int N, int M, double* a_array, double* beta_array, int n_measures);
+    
 #endif

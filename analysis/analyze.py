@@ -28,8 +28,8 @@ def analyze(args):
     row_result["err_E"], tau_e = error(data["E"], label=f"{tag} obs=E")
 
     # 2. Winding Number (Q) - Dovrebbe mediare a zero per simmetria
-    #row_result["Q"] = data["Q"].mean()
-    #row_result["err_Q"], tau_q = error(data["Q"], label=f"{tag} obs=Q")
+    row_result["Q"] = data["Q"].mean()
+    row_result["err_Q"], tau_q = error(data["Q"], label=f"{tag} obs=Q")
 
     # 3. Winding Number Quadrato (Q^2) - Misura la delocalizzazione topologica
     #k_q = safe_block_k(tau_q, len(data["Q"]), label=f"{tag} obs=Q")
