@@ -24,6 +24,8 @@ int main(void){
     char alg[] = "metropolis";
     char sim_name[256];
 
+
+    // IMPOSTAZIONI GENERALI SIMULAZIONE
     printf("Nome della simulazione: ");
     scanf("%255s", sim_name);
 
@@ -37,17 +39,21 @@ int main(void){
     }
 
     if (mkdir(folder_path, 0777) != 0) {
-        perror("WARNING: Non è stato possibile creare la cartella della simulazione.");
-        exit(EXIT_FAILURE);
+        if(errno == EEXIST) {
+            perror("WARNING: La cartella già esiste. Proseguendo è possibile che i precedenti file vengano rimossi o sostituiti.");
+        } else {
+            perror("WARNING: Non è stato possibile creare la cartella della simulazione.");
+            exit(EXIT_FAILURE);
+        }
     }
 
-    // 1. Scelta della Fase del Flusso di Lavoro
+    // SCELTA DELLA FASE DI LAVORO
     int phase = 0;
     while(phase < 1 || phase > 3) {
         printf("\n=== SELEZIONE DEL FLUSSO DI LAVORO ===\n");
-        printf("1. Fase 1: Ricerca del Ground State (Fissa 'a', esplora 'N')\n");
+        printf("1. Fase 1: Ricerca del Ground State (Fissa 'eta', esplora 'N')\n");
         printf("2. Fase 2: Limite del Continuo (Fissa 'beta', esplora 'N')\n");
-        printf("3. Fase 3: Parallel Tempering (Fissa 'N', esplora range di 'beta')\n");
+        printf("3. Fase 3: Parallel Tempering\n");
         printf("Scegli la fase (1, 2 o 3): ");
         scanf("%d", &phase);
     }
@@ -57,13 +63,13 @@ int main(void){
     if (phase == 1) {
         printf("\n--- FASE 1: RICERCA DEL GROUND STATE ---\n");
         while(fixed_val <= 0.0) {
-            printf("Inserisci il passo temporale fisso 'a' (es. 0.1): ");
+            printf("Inserisci il passo temporale fisso 'eta' (es. 0.1): ");
             scanf("%lf", &fixed_val);
         }
     } else if(phase == 2){
         printf("\n--- FASE 2: LIMITE DEL CONTINUO ---\n");
         while(fixed_val <= 0.0) {
-            printf("Inserisci il tempo immaginario fisso 'beta' (='N*a') (es. 5.0): ");
+            printf("Inserisci il tempo immaginario fisso 'beta' (='N*eta') (es. 2.0): ");
             scanf("%lf", &fixed_val);
         }
     } else if (phase == 3) {
@@ -128,6 +134,9 @@ int main(void){
     int *N_array = (int *)malloc(n_N * sizeof(int));
     
     for (int i = 0; i < n_N; i++) {
+        if(i>0) {
+            if(phase == 1) printf("[eta=%3.f, N=%d] Valore di beta corrispondente (beta = N*eta): %3.f\n", fixed_val, N_array[i-1], (double)N_array[i-1]*fixed_val);
+        }
         while(1) {
             printf("Inserisci N per il reticolo %d: ", i + 1);
             scanf("%d", &N_array[i]);
@@ -142,17 +151,21 @@ int main(void){
     printf("\n--- PARAMETRI MONTE CARLO ---\n");
 
     while(1) {
+        double input = 0.0;
         printf("Inserisci il numero di sweep di misura: ");
-        scanf("%d", &n_measures);
-        if (n_measures > 0) break;
+        scanf("%lf", &input);
+        if (input > 0) {
+            n_measures = (int) input;
+            break;
+        }
     }
-
+    
     // Riepilogo a schermo
     printf("\n=== SETUP SIMULAZIONE COMPLETATO ===\n");
     if (phase == 1) {
-        printf("Modalita': Ricerca Ground State (a fisso = %f)\n", fixed_val);
+        printf("Modalita': Ricerca Ground State (eta fisso = %3.f)\n", fixed_val);
     } else {
-        printf("Modalita': Limite Continuo (beta fisso = %f)\n", fixed_val);
+        printf("Modalita': Limite Continuo (beta fisso = %3.f)\n", fixed_val);
     }
     printf("Cartella di output: data/%s\n", sim_name);
     printf("Taglie (N): %d\n", n_N);
@@ -169,9 +182,6 @@ int main(void){
     }
     omp_set_num_threads(n_threads);
 
-    // Inizializzazione della barra di progresso (se usi progress.h)
-    // progress_init(n_threads, n_N);
-
     // =========================================================================
     // ESECUZIONE PARALLELA DELLE SIMULAZIONI
     // =========================================================================
@@ -187,23 +197,23 @@ int main(void){
     #pragma omp parallel for schedule(dynamic, 1)
     for (int i = 0; i < n_N; i++) {
         int N = N_array[i];
-        double a, beta;
+        double eta, beta;
 
         if (phase == 1) {
-            a = fixed_val;          
-            beta = N * a;           
+            eta = fixed_val;          
+            beta = N * eta;           
         } else {
             beta = fixed_val;       
-            a = beta / (double)N;   
+            eta = beta / (double)N;   
         }
 
         pcg32_random_t rng;
         pcg32_srandom_r(&rng, 42u ^ (uint64_t)i, 54u ^ (uint64_t)N);
 
-        bool hot_start = false; 
+        bool hot_start = true; 
         Polymer* poly = init_polymer(N, hot_start, &rng);
 
-        simulation(poly, a, beta, alg, n_measures, sim_name, &rng);
+        simulation(poly, eta, beta, alg, n_measures, sim_name, &rng);
 
         free_polymer(poly);
     }

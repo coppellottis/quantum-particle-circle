@@ -3,7 +3,7 @@
 
     #include "polymer.h"
 
-    double get_energy(Polymer* poly, double a);
-    double get_winding(Polymer* poly);
+    double get_energy(Polymer* poly, double eta);
+    int get_winding(Polymer* poly);
 
 #endif

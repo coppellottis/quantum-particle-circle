@@ -24,9 +24,9 @@ static int metropolis_therm_sweeps(int N) {
 
 // ----------------------------------------------------------------------------
 
-void simulation(Polymer* poly, double a, double beta, const char* alg, const int n_measures, const char* sim_name, pcg32_random_t* rng) {
+void simulation(Polymer* poly, double eta, double beta, const char* alg, const int n_measures, const char* sim_name, pcg32_random_t* rng) {
 
-    FILE* file = open_measurement_file(sim_name, poly->N, a, beta);
+    FILE* file = open_measurement_file(sim_name, poly->N, eta, beta);
 
     // The bar's row is the OpenMP thread slot this job landed on
     #ifdef _OPENMP
@@ -36,11 +36,11 @@ void simulation(Polymer* poly, double a, double beta, const char* alg, const int
     #endif
 
     char label[64];
-    snprintf(label, sizeof(label), "N=%-4d a=%.4f beta=%.4f", poly->N, a, beta);
+    snprintf(label, sizeof(label), "N=%-4d eta=%.4f beta=%.4f", poly->N, eta, beta);
 
     if(strcmp(alg, "metropolis") == 0) {
         int N_therm = metropolis_therm_sweeps(poly->N);
-        double max_delta = sqrt(a) / (2*M_PI);
+        double max_delta = sqrt(eta);
 
         // FASE 1: TERMALIZZAZIONE
         double therm_t0 = progress_now();
@@ -48,7 +48,7 @@ void simulation(Polymer* poly, double a, double beta, const char* alg, const int
         
         for(int i = 0; i < N_therm; i++) {
             // 1. Mossa locale (diffusione di Trotter)
-            metropolis_sweep(poly, a, max_delta, rng);
+            metropolis_sweep(poly, eta, max_delta, rng);
             // 2. Mossa globale (campionamento dei settori topologici)
             //winding_move(poly, a, rng);
 
@@ -64,15 +64,15 @@ void simulation(Polymer* poly, double a, double beta, const char* alg, const int
         
         for(int i = 0; i < n_measures; i++) {
             // Evoluzione del sistema
-            metropolis_sweep(poly, a, max_delta, rng);
+            metropolis_sweep(poly, eta, max_delta, rng);
             //winding_move(poly, a, rng);
             
             // Calcolo delle osservabili (l'energia dipende esplicitamente da 'a')
-            double E = get_energy(poly, a);
-            double Q = get_winding(poly);
+            double E = get_energy(poly, eta);
+            int Q = get_winding(poly);
             
             // Salvataggio su file
-            fprintf(file, "%d,%.10f,%.1f\n", i, E, Q);
+            fprintf(file, "%d,%.10f,%d\n", i, E, Q);
             
             if(i % meas_step == 0 || i == n_measures - 1) {
                 progress_update(row, label, "meas", i + 1, n_measures, progress_now() - meas_t0);

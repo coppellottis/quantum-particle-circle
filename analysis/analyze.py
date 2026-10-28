@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
         jobs.append((sim_name, N, a, beta))
 
-    n_processes = 4
+    n_processes = 1
     
     # Round-robin per allocare dinamicamente le righe del terminale ai worker
     jobs = [(*job, 1 + i % n_processes) for i, job in enumerate(jobs)]

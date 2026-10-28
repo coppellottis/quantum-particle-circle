@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 // Assumiamo massa m = 1, R=1 (Momento di inerzia I = 1)
-void metropolis_update(Polymer* poly, double a, double max_delta, pcg32_random_t* rng, int i) {
+void metropolis_update(Polymer* poly, double eta, double max_delta, pcg32_random_t* rng, int i) {
     int N = poly->N;
 
     // Condizioni al contorno periodiche (anello chiuso)
@@ -20,7 +20,7 @@ void metropolis_update(Polymer* poly, double a, double max_delta, pcg32_random_t
     double dx = max_delta * (2.0 * r_disp - 1.0); // proposta simmetrica rispetto a x_old
     double x_new = x_old + dx;
 
-    // 2. Confinamento in (-pi, pi]
+    // 2. Confinamento in (-.5, .5]
     if (x_new > 0.5)  x_new -= 1;
     if (x_new <= -0.5) x_new += 1;
 
@@ -29,11 +29,11 @@ void metropolis_update(Polymer* poly, double a, double max_delta, pcg32_random_t
     double d_left_old  = dist_circle(x_old, poly->beads[left]);
     double d_right_old = dist_circle(poly->beads[right], x_old);
     // Il fattore 4*pi^2 deriva dal riscalamento di x=phi/2pi
-    double S_old = (4*M_PI*M_PI)*(d_left_old * d_left_old + d_right_old * d_right_old) / (2.0 * a);
+    double S_old = (d_left_old * d_left_old + d_right_old * d_right_old) / (2.0 * eta);
 
     double d_left_new  = dist_circle(x_new, poly->beads[left]);
     double d_right_new = dist_circle(poly->beads[right], x_new);
-    double S_new =  (4*M_PI*M_PI)*(d_left_new * d_left_new + d_right_new * d_right_new) / (2.0 * a);
+    double S_new =  (d_left_new * d_left_new + d_right_new * d_right_new) / (2.0 * eta);
 
     double delta_S = S_new - S_old;
 
@@ -53,10 +53,10 @@ void metropolis_update(Polymer* poly, double a, double max_delta, pcg32_random_t
     }
 }
 
-void metropolis_sweep(Polymer* poly, double a, double max_delta, pcg32_random_t* rng) {
+void metropolis_sweep(Polymer* poly, double eta, double max_delta, pcg32_random_t* rng) {
     int N = poly->N;
     for(int i=0; i < N; i++) {
-        metropolis_update(poly, a, max_delta, rng, i);
+        metropolis_update(poly, eta, max_delta, rng, i);
     }
 }
 

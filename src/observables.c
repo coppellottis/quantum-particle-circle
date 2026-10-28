@@ -7,7 +7,7 @@
 // In order to avoid double counting, the sum
 // over nearest neighbours is performed by considering only
 // the right and the down neighbours. J=1.
-double get_energy(Polymer* poly, double a) {
+double get_energy(Polymer* poly, double eta) {
     int N = poly->N;
     double sum_du_sq = 0.0;
     
@@ -17,13 +17,13 @@ double get_energy(Polymer* poly, double a) {
         sum_du_sq += (du * du);
     }
     
-    double term_const = 1.0 / (2.0 * a);
-    double term_fluct = (4.0 * M_PI * M_PI * sum_du_sq) / (2.0 * N * a * a);
+    double term_const = 1.0 / (2.0 * eta);
+    double term_fluct = sum_du_sq / (2.0 * N * eta * eta);
     
     return (term_const - term_fluct);
 }
 
-double get_winding(Polymer* poly) {
+int get_winding(Polymer* poly) {
     int N = poly->N;
     double winding_sum = 0.0;
 
@@ -41,5 +41,5 @@ double get_winding(Polymer* poly) {
     // Matematicamente winding_sum è già un intero esatto (es. 0.0, 1.0, -2.0).
     // Usiamo round() per correggere eventuali e minuscoli errori di 
     // arrotondamento accumulati dalla virgola mobile (es. 0.99999999999997).
-    return round(winding_sum);
+    return (int)round(winding_sum);
 }
