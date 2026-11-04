@@ -40,7 +40,7 @@ void simulation(Polymer* poly, double eta, double beta, const char* alg, const i
 
     if(strcmp(alg, "metropolis") == 0) {
         int N_therm = metropolis_therm_sweeps(poly->N);
-        double max_delta = sqrt(eta);
+        double max_delta = (0.5>2*sqrt(eta)) ? 2*sqrt(eta) : 0.5;
 
         // FASE 1: TERMALIZZAZIONE
         double therm_t0 = progress_now();
@@ -48,7 +48,7 @@ void simulation(Polymer* poly, double eta, double beta, const char* alg, const i
         
         for(int i = 0; i < N_therm; i++) {
             // 1. Mossa locale (diffusione di Trotter)
-            metropolis_sweep(poly, eta, max_delta, rng);
+            metropolis_sweep(poly, eta, max_delta, rng, NULL);
             // 2. Mossa globale (campionamento dei settori topologici)
             //winding_move(poly, a, rng);
 
@@ -62,9 +62,11 @@ void simulation(Polymer* poly, double eta, double beta, const char* alg, const i
         double meas_t0 = progress_now();
         int meas_step = n_measures / 100 > 0 ? n_measures / 100 : 1;
         
+        int acc_count = 0;
+
         for(int i = 0; i < n_measures; i++) {
             // Evoluzione del sistema
-            metropolis_sweep(poly, eta, max_delta, rng);
+            metropolis_sweep(poly, eta, max_delta, rng, &acc_count);
             //winding_move(poly, a, rng);
             
             // Calcolo delle osservabili (l'energia dipende esplicitamente da 'a')
@@ -78,6 +80,13 @@ void simulation(Polymer* poly, double eta, double beta, const char* alg, const i
                 progress_update(row, label, "meas", i + 1, n_measures, progress_now() - meas_t0);
             }
         }
+
+        double acc_rate = (double)acc_count/(double)(n_measures*poly->N);
+
+        FILE* file2 = fopen("past.txt", "a");
+        fprintf(file2, "eta: %.4f, max_delta: %.4f, acc_rate: %.4f\n", eta, max_delta, acc_rate*100);
+        fclose(file2);
+
     } else {
         // Se in futuro vorrai implementare algoritmi avanzati per i Path Integral 
         // (es. Worm Algorithm o Staging), potrai aggiungerli qui.
@@ -126,7 +135,7 @@ void simulation_pt(Polymer** replicas, double* a_array, double* beta_array, int 
         #pragma omp parallel for schedule(static)
         for (int k = 0; k < M; k++) {
             for (int s = 0; s < SWEEPS_PER_EXCHANGE; s++) {
-                metropolis_sweep(replicas[k], a_array[k], max_deltas[k], &rngs[k]);
+                metropolis_sweep(replicas[k], a_array[k], max_deltas[k], &rngs[k], NULL);
             }
         }
         
@@ -151,7 +160,7 @@ void simulation_pt(Polymer** replicas, double* a_array, double* beta_array, int 
         #pragma omp parallel for schedule(static)
         for (int k = 0; k < M; k++) {
             for (int s = 0; s < SWEEPS_PER_EXCHANGE; s++) {
-                metropolis_sweep(replicas[k], a_array[k], max_deltas[k], &rngs[k]);
+                metropolis_sweep(replicas[k], a_array[k], max_deltas[k], &rngs[k], NULL);
             }
         }
 

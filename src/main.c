@@ -210,7 +210,7 @@ int main(void){
         pcg32_random_t rng;
         pcg32_srandom_r(&rng, 42u ^ (uint64_t)i, 54u ^ (uint64_t)N);
 
-        bool hot_start = true; 
+        bool hot_start = false; 
         Polymer* poly = init_polymer(N, hot_start, &rng);
 
         simulation(poly, eta, beta, alg, n_measures, sim_name, &rng);

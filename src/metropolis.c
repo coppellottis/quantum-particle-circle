@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 // Assumiamo massa m = 1, R=1 (Momento di inerzia I = 1)
-void metropolis_update(Polymer* poly, double eta, double max_delta, pcg32_random_t* rng, int i) {
+int metropolis_update(Polymer* poly, double eta, double max_delta, pcg32_random_t* rng, int i) {
     int N = poly->N;
 
     // Condizioni al contorno periodiche (anello chiuso)
@@ -17,12 +17,8 @@ void metropolis_update(Polymer* poly, double eta, double max_delta, pcg32_random
 
     // 1. Proposta di spostamento continuo uniforme in [-max_delta, max_delta)
     double r_disp = (double)pcg32_random_r(rng) / 4294967296.0;
-    double dx = max_delta * (2.0 * r_disp - 1.0); // proposta simmetrica rispetto a x_old
+    double dx = max_delta * (1-2.0 * r_disp); // proposta simmetrica rispetto a x_old
     double x_new = x_old + dx;
-
-    // 2. Confinamento in (-.5, .5]
-    if (x_new > 0.5)  x_new -= 1;
-    if (x_new <= -0.5) x_new += 1;
 
     // 3. Calcolo della variazione dell'Azione (Delta S)
     // S_kin = (distanza)^2 / (2 * a)
@@ -44,19 +40,23 @@ void metropolis_update(Polymer* poly, double eta, double max_delta, pcg32_random
     // 4. Accettazione Metropolis (con cortocircuito per delta_S < 0)
     if (delta_S <= 0.0) {
         poly->beads[i] = x_new;
+        return 1;
     } else {
         double t = (double)pcg32_random_r(rng) / 4294967296.0;
         // Chiamata costosa a exp() solo se strettamente necessario
         if (t < exp(-delta_S)) {
             poly->beads[i] = x_new;
+            return 1;
         }
+        return 0;
     }
 }
 
-void metropolis_sweep(Polymer* poly, double eta, double max_delta, pcg32_random_t* rng) {
+void metropolis_sweep(Polymer* poly, double eta, double max_delta, pcg32_random_t* rng, int* acc_count) {
     int N = poly->N;
     for(int i=0; i < N; i++) {
-        metropolis_update(poly, eta, max_delta, rng, i);
+        int k = metropolis_update(poly, eta, max_delta, rng, i);
+        if (acc_count != NULL) (*acc_count) += k;
     }
 }
 
@@ -68,7 +68,7 @@ static double get_action_sum(Polymer* poly) {
         double du = dist_circle(poly->beads[next], poly->beads[i]);
         sum_du_sq += (du * du);
     }
-    return 4.0 * M_PI * M_PI * sum_du_sq;
+    return sum_du_sq;
 }
 
 void replica_exchange(Polymer* p1, double a1, Polymer* p2, double a2, pcg32_random_t* rng) {

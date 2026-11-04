@@ -4,8 +4,8 @@
     #include "polymer.h"
     #include "pcg_basic.h"
 
-    void metropolis_update(Polymer* poly, double eta, double max_delta, pcg32_random_t* rng, int i);
-    void metropolis_sweep(Polymer* poly, double eta, double max_delta, pcg32_random_t* rng);
+    int metropolis_update(Polymer* poly, double eta, double max_delta, pcg32_random_t* rng, int i);
+    void metropolis_sweep(Polymer* poly, double eta, double max_delta, pcg32_random_t* rng, int* acc_count);
     static double get_action_sum(Polymer* poly);
     void replica_exchange(Polymer* p1, double eta1, Polymer* p2, double eta2, pcg32_random_t* rng);
     
