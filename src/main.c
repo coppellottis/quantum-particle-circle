@@ -14,6 +14,7 @@
 #include "simulation.h"
 #include "observables.h"
 #include "progress.h"
+///_______________________
 
 int main(void){
 
@@ -73,49 +74,54 @@ int main(void){
             scanf("%lf", &fixed_val);
         }
     } else if (phase == 3) {
-        int N, M, n_measures;
-        double beta_min, beta_max;
+        int Nt, NR, n_measures;
+        double C, eta0;
 
         printf("\n--- FASE 3: PARALLEL TEMPERING ---\n");
         printf("Inserisci N (numero di bead fisso): ");
-        scanf("%d", &N);
+        scanf("%d", &Nt);
         printf("Inserisci M (numero di repliche/temperature): ");
-        scanf("%d", &M);
-        // C'è un modo migliore per determinare i beta (per massimizzare le accettazioni degli scambi...)
-        printf("Inserisci beta minimo e massimo (es. 0.5 15.0): ");
-        scanf("%lf %lf", &beta_min, &beta_max);
+        scanf("%d", &NR);
+        printf("Inserisci parametro C: ");
+        scanf("%lf", &C);
+        printf("Inserisci eta iniziale: ");
+        scanf("%lf", &eta0);
+        double input = 0.0;
         printf("Inserisci il numero di misure: ");
-        scanf("%d", &n_measures);
+        scanf("%lf", &input);
+        if (input > 0) {
+            n_measures = (int) input;
+        }
 
-        Polymer** replicas = malloc(M * sizeof(Polymer*));
-        double* a_array = malloc(M * sizeof(double));
-        double* beta_array = malloc(M * sizeof(double));
-        pcg32_random_t* rngs = malloc(M * sizeof(pcg32_random_t));
+        Polymer** replicas = malloc(NR * sizeof(Polymer*));
+        double* eta_array = malloc(NR * sizeof(double));
+        double* beta_array = malloc(NR * sizeof(double));
+        pcg32_random_t* rngs = malloc(NR * sizeof(pcg32_random_t));
 
-        for (int k = 0; k < M; k++) {
-            beta_array[k] = beta_min + k * (beta_max - beta_min) / (M > 1 ? M - 1 : 1);
-            a_array[k] = beta_array[k] / (double)N;
-            pcg32_srandom_r(&rngs[k], 42u ^ (uint64_t)k, 54u ^ (uint64_t)N);
+        for (int k = 0; k < NR; k++) {
+            eta_array[k] = pow(C,k)*eta0;
+            beta_array[k] = eta_array[k]*Nt;
+            pcg32_srandom_r(&rngs[k], 42u ^ (uint64_t)k, 54u ^ (uint64_t)Nt);
             bool hot_start = true;
-            replicas[k] = init_polymer(N, hot_start, &rngs[k]);
+            replicas[k] = init_polymer(Nt, hot_start, &rngs[k]);
         }
 
         // --- SALVATAGGIO METADATI PER ANALYZE.PY ---
-        write_metadata_pt(sim_name, N, M, a_array, beta_array, n_measures);
+        write_metadata_pt(sim_name, Nt, NR, eta_array, beta_array, n_measures);
 
-        omp_set_num_threads(M);
+        omp_set_num_threads(NR);
 
-        printf("\nAvvio simulazione PT con %d repliche...\n", M);
+        printf("\nAvvio simulazione PT con %d repliche...\n", NR);
         progress_init(1, 1);
 
-        simulation_pt(replicas, a_array, beta_array, M, n_measures, sim_name, rngs);
+        simulation_pt(replicas, eta_array, beta_array, NR, n_measures, sim_name, rngs);
 
         progress_job_done();
         progress_finish();
 
-        for(int k = 0; k < M; k++) free_polymer(replicas[k]);
+        for(int k = 0; k < NR; k++) free_polymer(replicas[k]);
         free(replicas); 
-        free(a_array); 
+        free(eta_array); 
         free(beta_array); 
         free(rngs);
         

@@ -39,12 +39,33 @@ int metropolis_update(Polymer* poly, double eta, double max_delta, pcg32_random_
 
     // 4. Accettazione Metropolis (con cortocircuito per delta_S < 0)
     if (delta_S <= 0.0) {
+        // if (fabs(d_left_new  - d_left_old)  > 0.5) {
+        //     poly->n_wrap++; 
+        //     poly->sum_d0 += fabs(d_left_old);  
+        //     poly->sum_d1 += fabs(d_left_new);
+        // }
+        // if (fabs(d_right_new - d_right_old) > 0.5) {
+        //     poly->n_wrap++; 
+        //     poly->sum_d0 += fabs(d_right_old); 
+        //     poly->sum_d1 += fabs(d_right_new);
+        // }
+
         poly->beads[i] = x_new;
         return 1;
     } else {
         double t = (double)pcg32_random_r(rng) / 4294967296.0;
         // Chiamata costosa a exp() solo se strettamente necessario
         if (t < exp(-delta_S)) {
+            // if (fabs(d_left_new  - d_left_old)  > 0.5) {
+            //     poly->n_wrap++; 
+            //     poly->sum_d0 += fabs(d_left_old);  
+            //     poly->sum_d1 += fabs(d_left_new);
+            // }
+            // if (fabs(d_right_new - d_right_old) > 0.5) {
+            //     poly->n_wrap++; 
+            //     poly->sum_d0 += fabs(d_right_old); 
+            //     poly->sum_d1 += fabs(d_right_new);
+            // }
             poly->beads[i] = x_new;
             return 1;
         }
@@ -77,12 +98,15 @@ void replica_exchange(Polymer* p1, double a1, Polymer* p2, double a2, pcg32_rand
     
     // Delta S = S(X1,a1)+S(X2,a2)-S(X2,a1)-S(X1,a1), semplificando
     // si ottiene l'espressione seguente
-    double delta_S = (K2 - K1) * (1.0 / (2.0 * a1) - 1.0 / (2.0 * a2));
+    double delta_S = (K2-K1) * (1.0 / (2.0 * a1) - 1.0 / (2.0 * a2));
     
+    p1->sum_d0 += 1; // conteggio proposte di cambio
+
     // Scambio dei puntatori
     if (delta_S <= 0.0 || ((double)pcg32_random_r(rng) / 4294967296.0) < exp(-delta_S)) {
         double* temp_beads = p1->beads;
         p1->beads = p2->beads;
         p2->beads = temp_beads;
+        p1->sum_d1 += 1; // conteggio proposte di cambio accettate.
     }
 }

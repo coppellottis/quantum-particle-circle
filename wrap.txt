@@ -1,0 +1,62 @@
+Delta = 0.5 costante (con therm)
+N=100 eta=0.0200  d*=0.3114  (dopo: 0.3113)  n_wrap=1657714
+N=120 eta=0.0167  d*=0.3081  (dopo: 0.3081)  n_wrap=997241
+N=140 eta=0.0143  d*=0.3053  (dopo: 0.3053)  n_wrap=590957
+N=160 eta=0.0125  d*=0.3025  (dopo: 0.3024)  n_wrap=349357
+N=180 eta=0.0111  d*=0.2999  (dopo: 0.3003)  n_wrap=205021
+N=200 eta=0.0100  d*=0.2979  (dopo: 0.2978)  n_wrap=120354
+N=220 eta=0.0091  d*=0.2966  (dopo: 0.2956)  n_wrap=71021
+N=240 eta=0.0083  d*=0.2946  (dopo: 0.2943)  n_wrap=41622
+N=260 eta=0.0077  d*=0.2931  (dopo: 0.2918)  n_wrap=24151
+N=280 eta=0.0071  d*=0.2906  (dopo: 0.2917)  n_wrap=14259
+N=300 eta=0.0067  d*=0.2897  (dopo: 0.2904)  n_wrap=8083
+---------------------------------------------------------
+Delta = 2*sqrt(eta) (con therm)
+N=100 eta=0.0200  d*=0.3963  (dopo: 0.3964)  n_wrap=523264
+N=120 eta=0.0167  d*=0.4039  (dopo: 0.4040)  n_wrap=231341
+N=140 eta=0.0143  d*=0.4100  (dopo: 0.4100)  n_wrap=98082
+N=160 eta=0.0125  d*=0.4147  (dopo: 0.4144)  n_wrap=41318
+N=180 eta=0.0111  d*=0.4189  (dopo: 0.4182)  n_wrap=16665
+N=200 eta=0.0100  d*=0.4216  (dopo: 0.4216)  n_wrap=6875
+N=220 eta=0.0091  d*=0.4249  (dopo: 0.4247)  n_wrap=2776
+N=240 eta=0.0083  d*=0.4282  (dopo: 0.4269)  n_wrap=1077
+N=260 eta=0.0077  d*=0.4323  (dopo: 0.4294)  n_wrap=454
+N=280 eta=0.0071  d*=0.4321  (dopo: 0.4341)  n_wrap=153
+N=300 eta=0.0067  d*=0.4267  (dopo: 0.4375)  n_wrap=60
+---------------------------------------------------------
+Delta = 0.5 costante (senza therm)
+N=100 eta=0.0200  d*=0.3114  (dopo: 0.3113)  n_wrap=1380942
+N=120 eta=0.0167  d*=0.3081  (dopo: 0.3081)  n_wrap=773927
+N=140 eta=0.0143  d*=0.3051  (dopo: 0.3054)  n_wrap=422894
+N=160 eta=0.0125  d*=0.3027  (dopo: 0.3024)  n_wrap=230588
+N=180 eta=0.0111  d*=0.3000  (dopo: 0.3004)  n_wrap=124725
+N=200 eta=0.0100  d*=0.2980  (dopo: 0.2980)  n_wrap=66663
+N=220 eta=0.0091  d*=0.2964  (dopo: 0.2961)  n_wrap=35944
+N=240 eta=0.0083  d*=0.2945  (dopo: 0.2942)  n_wrap=19367
+N=260 eta=0.0077  d*=0.2932  (dopo: 0.2909)  n_wrap=10265
+N=280 eta=0.0071  d*=0.2910  (dopo: 0.2917)  n_wrap=5450
+N=300 eta=0.0067  d*=0.2903  (dopo: 0.2909)  n_wrap=2905
+---------------------------------------------------------
+Delta = 2*sqrt(eta) (senza therm)
+N=100 eta=0.0200  d*=0.3963  (dopo: 0.3964)  n_wrap=435609
+N=120 eta=0.0167  d*=0.4040  (dopo: 0.4040)  n_wrap=179966
+N=140 eta=0.0143  d*=0.4101  (dopo: 0.4099)  n_wrap=70791
+N=160 eta=0.0125  d*=0.4147  (dopo: 0.4143)  n_wrap=27488
+N=180 eta=0.0111  d*=0.4189  (dopo: 0.4183)  n_wrap=10223
+N=200 eta=0.0100  d*=0.4213  (dopo: 0.4216)  n_wrap=3821
+N=220 eta=0.0091  d*=0.4253  (dopo: 0.4253)  n_wrap=1368
+N=240 eta=0.0083  d*=0.4288  (dopo: 0.4277)  n_wrap=524
+N=260 eta=0.0077  d*=0.4306  (dopo: 0.4315)  n_wrap=224
+N=280 eta=0.0071  d*=0.4357  (dopo: 0.4316)  n_wrap=65
+N=300 eta=0.0067  d*=0.4230  (dopo: 0.4405)  n_wrap=28
+N=400 eta=0.0050  d*=-nan  (dopo: -nan)  n_wrap=0
+N=120 eta=0.0167  d*=-nan  (dopo: -nan)  n_wrap=0
+N=150 eta=0.0133  d*=-nan  (dopo: -nan)  n_wrap=0
+N=180 eta=0.0111  d*=-nan  (dopo: -nan)  n_wrap=0
+N=210 eta=0.0095  d*=-nan  (dopo: -nan)  n_wrap=0
+N=240 eta=0.0083  d*=-nan  (dopo: -nan)  n_wrap=0
+N=270 eta=0.0074  d*=-nan  (dopo: -nan)  n_wrap=0
+N=300 eta=0.0067  d*=-nan  (dopo: -nan)  n_wrap=0
+N=330 eta=0.0061  d*=-nan  (dopo: -nan)  n_wrap=0
+N=360 eta=0.0056  d*=-nan  (dopo: -nan)  n_wrap=0
+N=390 eta=0.0051  d*=-nan  (dopo: -nan)  n_wrap=0

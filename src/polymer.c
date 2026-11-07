@@ -9,6 +9,9 @@ Polymer* init_polymer(int N, bool hot, pcg32_random_t* rng) {
     Polymer* poly = malloc(sizeof(Polymer));
     poly->beads = malloc(N*sizeof(double));
     poly->N = N;
+    poly->n_wrap = 0;
+    poly->sum_d0 = 0;
+    poly->sum_d1 = 0;
 
     for (int i = 0; i < N; i++) {
         if (hot) {

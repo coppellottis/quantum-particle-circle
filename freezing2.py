@@ -88,7 +88,7 @@ def P(Q, beta) :
     den = np.sum(np.exp(-Q1**2/(2*beta)))
     return np.exp(-Q**2/(2*beta))/den
 
-N = 10
+N = 400
 n = N
 beta = 2
 eps = 1e-10
@@ -98,11 +98,11 @@ fig, ax = plt.subplots(figsize=(12, 8))
 width = .2
 
 eta = beta/N
-data = pd.read_csv(f"data/top_freezing2/N{N}_a{eta:.4f}_beta{beta:.4f}.csv")
+data = pd.read_csv(f"data/PT_3/N{N}_a{eta:.4f}_beta{beta:.4f}.csv")
 
 QQ = np.arange(-6,7)
 hist = [np.sum(data["Q"] == i)/np.size(data,axis=0) for i in QQ]
-ax.bar(QQ+width,hist,width=width,label=fr"$N_t={n}$, MC (locale)")
+ax.bar(QQ+width,hist,width=width,label=fr"$N_t={n}$, PT")
 
 yQ = np.array([P(Q, beta) for Q in QQ])
     
@@ -115,7 +115,7 @@ ax.legend(loc="best")
 
 fig.tight_layout()
 
-fig.savefig("results/freezing2b.pdf",bbox_inches="tight")
+fig.savefig(f"results/freezingNt{N}.pdf",bbox_inches="tight")
 
 
 # N = np.arange(1,5)*100

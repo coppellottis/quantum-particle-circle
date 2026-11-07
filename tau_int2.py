@@ -49,7 +49,34 @@ def lin(x, m, q):
     return m*x+q
 
 fig, ax = plt.subplots(figsize=(12,8))
-N = np.arange(12,33,3)*10
+N = np.arange(3,36,3)*10
+
+yy = []
+
+for n in N:
+    beta = 2
+    eta = beta/n
+
+    data = pd.read_csv(f"data/tau_intb/N{n}_a{eta:.4f}_beta{beta:.4f}.csv")
+    Q = np.array(data["Q"])
+    rho = emcee.autocorr.function_1d(Q)
+
+    tau, M = tau_int(rho, 2, n)
+
+    yy.append([n, tau, M])
+
+yy = np.array(yy)
+
+ax.plot(yy[:,0], np.log(yy[:,1]), '-o',label=r"$\tau_{int}^Q (\Delta=0.5)$")
+
+xx = np.linspace(min(yy[:,0]),max(yy[:,0]))
+
+popt, pcov = curve_fit(lin, yy[:,0], np.log(yy[:,1]))
+
+m, q = popt
+dm, dq = np.sqrt(np.diag(pcov))
+
+ax.plot(xx, lin(xx, m, q), '-.', color=ax.lines[-1].get_color(), label=fr"Fit: $e^{{aN_t}}, a\simeq {m:.3f}\pm{dm:.3f}$")
 
 yy = []
 
@@ -67,26 +94,27 @@ for n in N:
 
 yy = np.array(yy)
 
-ax.plot(yy[:,0], np.log10(yy[:,1]), '-o',label=r"$\tau_{int}^Q$")
+ax.plot(yy[:,0], np.log(yy[:,1]), '-o',label=r"$\tau_{int}^Q (\Delta=\min(0.5,2\sqrt{\eta}))$")
 
 xx = np.linspace(min(yy[:,0]),max(yy[:,0]))
 
-popt, pcov = curve_fit(lin, yy[:,0], np.log10(yy[:,1]))
+popt, pcov = curve_fit(lin, yy[:,0], np.log(yy[:,1]))
 
 m, q = popt
 dm, dq = np.sqrt(np.diag(pcov))
 
-ax.plot(xx, lin(xx, m, q), '-.', color="orange", label=fr"$Fit: m\simeq {m:.3f}\pm{dm:.3f}$")
-ax.plot(xx, xx/16-lin(xx[0], m,q), 'r-.', label=r"$\propto e^{N_t/16}$")
+ax.plot(xx, lin(xx, m, q), '-.', color=ax.lines[-1].get_color(), label=fr"Fit: $e^{{aN_t}}, a\simeq {m:.3f}\pm{dm:.3f}$")
 
-ax.set_xlabel(r"$N_t$")
-ax.set_ylabel(r"$\tau_{int}^{Q}$")
+ax.plot(xx, xx/16, 'r-.', label=r"$\propto e^{N_t/16}$")
+
+ax.set_xlabel(fr"$N_t$")
+ax.set_ylabel(fr"$\tau_{{int}}^{{Q}} [\log]$")
 
 ax.legend(loc="best")
 
 ax.grid(alpha=.2)
 
 fig.tight_layout()
-fig.savefig("results/tau_int2.pdf", bbox_inches="tight")
+fig.savefig("results/tau_int2b.pdf", bbox_inches="tight")
 
 plt.show()

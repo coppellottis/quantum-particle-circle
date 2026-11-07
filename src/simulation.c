@@ -59,6 +59,11 @@ void simulation(Polymer* poly, double eta, double beta, const char* alg, const i
         }
 
         // FASE 2: MISURA
+
+        poly->n_wrap = 0;
+        poly->sum_d0 = 0;
+        poly->sum_d1 = 0;
+
         double meas_t0 = progress_now();
         int meas_step = n_measures / 100 > 0 ? n_measures / 100 : 1;
         
@@ -80,6 +85,10 @@ void simulation(Polymer* poly, double eta, double beta, const char* alg, const i
                 progress_update(row, label, "meas", i + 1, n_measures, progress_now() - meas_t0);
             }
         }
+
+        FILE* file3 = fopen("wrap.txt", "a");
+        fprintf(file3, "N=%d eta=%.4f  d*=%.4f  (dopo: %.4f)  n_wrap=%ld\n", poly->N, eta, poly->sum_d0/poly->n_wrap, poly->sum_d1/poly->n_wrap, poly->n_wrap);
+        fclose(file3);
 
         double acc_rate = (double)acc_count/(double)(n_measures*poly->N);
 
@@ -108,13 +117,12 @@ void simulation(Polymer* poly, double eta, double beta, const char* alg, const i
 // Ogni quanti sweep proporre lo scambio
 #define SWEEPS_PER_EXCHANGE 10
 
-void simulation_pt(Polymer** replicas, double* a_array, double* beta_array, int M, int n_measures, const char* sim_name, pcg32_random_t* rngs) {
-    FILE** files = malloc(M * sizeof(FILE*));
-    double* max_deltas = malloc(M * sizeof(double));
+void simulation_pt(Polymer** replicas, double* eta_array, double* beta_array, int NR, int n_measures, const char* sim_name, pcg32_random_t* rngs) {
+    FILE** files = malloc(NR * sizeof(FILE*));
+    double max_delta = 0.5;
     
-    for (int k = 0; k < M; k++) {
-        files[k] = open_measurement_file(sim_name, replicas[0]->N, a_array[k], beta_array[k]);
-        max_deltas[k] = sqrt(a_array[k]) / (2.0 * M_PI);
+    for (int k = 0; k < NR; k++) {
+        files[k] = open_measurement_file(sim_name, replicas[0]->N, eta_array[k], beta_array[k]);
     }
 
     int N_therm = metropolis_therm_sweeps(replicas[0]->N);
@@ -122,7 +130,7 @@ void simulation_pt(Polymer** replicas, double* a_array, double* beta_array, int 
     // --- SETUP DELLA BARRA DI PROGRESSO ---
     int row = 0; // Il PT usa una singola riga unificata per tutte le repliche
     char label[64];
-    snprintf(label, sizeof(label), "PT N=%-4d M=%-2d", replicas[0]->N, M);
+    snprintf(label, sizeof(label), "PT N=%-4d M=%-2d", replicas[0]->N, NR);
     
     double therm_t0 = progress_now();
     int therm_step = N_therm / 100 > 0 ? N_therm / 100 : 1;
@@ -133,17 +141,17 @@ void simulation_pt(Polymer** replicas, double* a_array, double* beta_array, int 
         // in blocchi rigidi e prestabiliti; essendo ogni polimero lungo esattamente N, 
         // il carico di lavoro è identico per tutti, rendendo questa la scelta più efficiente.
         #pragma omp parallel for schedule(static)
-        for (int k = 0; k < M; k++) {
+        for (int k = 0; k < NR; k++) {
             for (int s = 0; s < SWEEPS_PER_EXCHANGE; s++) {
-                metropolis_sweep(replicas[k], a_array[k], max_deltas[k], &rngs[k], NULL);
+                metropolis_sweep(replicas[k], eta_array[k], max_delta, &rngs[k], NULL);
             }
         }
         
         // Estrae 0 o 1 in modo casuale ad ogni ciclo di scambio, garantisce bilancio dettagliato ad ogni passo
         int offset = pcg32_random_r(&rngs[0]) % 2;
 
-        for (int k = offset; k < M - 1; k += 2) {
-            replica_exchange(replicas[k], a_array[k], replicas[k+1], a_array[k+1], &rngs[0]);
+        for (int k = offset; k < NR - 1; k += 2) {
+            replica_exchange(replicas[k], eta_array[k], replicas[k+1], eta_array[k+1], &rngs[0]);
         }
 
         // Aggiornamento grafico della termalizzazione
@@ -155,27 +163,33 @@ void simulation_pt(Polymer** replicas, double* a_array, double* beta_array, int 
     double meas_t0 = progress_now();
     int meas_step = n_measures / 100 > 0 ? n_measures / 100 : 1;
 
+    for (int k = 0; k < NR; k++) {
+        replicas[k]->sum_d0 = 0;
+        replicas[k]->sum_d1 = 0;
+    }
+
     // FASE 2: MISURA
     for (int i = 0; i < n_measures; i++) {
         #pragma omp parallel for schedule(static)
-        for (int k = 0; k < M; k++) {
+        for (int k = 0; k < NR; k++) {
             for (int s = 0; s < SWEEPS_PER_EXCHANGE; s++) {
-                metropolis_sweep(replicas[k], a_array[k], max_deltas[k], &rngs[k], NULL);
+                metropolis_sweep(replicas[k], eta_array[k], max_delta, &rngs[k], NULL);
             }
         }
 
         // Come prima: estrae 0 o 1 in modo casuale ad ogni ciclo di scambio, garantisce bilancio dettagliato ad ogni passo
         int offset = pcg32_random_r(&rngs[0]) % 2;
 
-        for (int k = offset; k < M - 1; k += 2) {
-            replica_exchange(replicas[k], a_array[k], replicas[k+1], a_array[k+1], &rngs[0]);
+        for (int k = offset; k < NR - 1; k += 2) {
+            replica_exchange(replicas[k], eta_array[k], replicas[k+1], eta_array[k+1], &rngs[0]);
         }
 
         #pragma omp parallel for schedule(static)
-        for (int k = 0; k < M; k++) {
-            double E = get_energy(replicas[k], a_array[k]);
+        for (int k = 0; k < NR; k++) {
+            double E = get_energy(replicas[k], eta_array[k]);
             double Q = get_winding(replicas[k]);
             fprintf(files[k], "%d,%.10f,%.1f\n", i, E, Q);
+            fflush(files[k]);
         }
 
         // Aggiornamento grafico delle misure
@@ -184,7 +198,10 @@ void simulation_pt(Polymer** replicas, double* a_array, double* beta_array, int 
         }
     }
 
-    for (int k = 0; k < M; k++) fclose(files[k]);
+    FILE* temp = fopen("P_acc.txt","a");
+    fprintf(temp, "Nt: %d, C: %.4f, P_acc: %.4f\n", replicas[0]->N, (eta_array[1]/eta_array[0]), (double) replicas[0]->sum_d1/replicas[0]->sum_d0);
+    fclose(temp);
+
+    for (int k = 0; k < NR; k++) fclose(files[k]);
     free(files); 
-    free(max_deltas);
 }

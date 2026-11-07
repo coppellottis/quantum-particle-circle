@@ -9,6 +9,9 @@
     typedef struct{
         double* beads;
         int N;
+        long n_wrap; // link che attraversano 1/2 in una mossa accettata
+        double sum_d0; // somma d prima mossa
+        double sum_d1; // somma d dopo mossa
     } Polymer;
 
     Polymer* init_polymer(int N, bool hot, pcg32_random_t* rng);
