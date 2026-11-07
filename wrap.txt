@@ -60,3 +60,4 @@ N=300 eta=0.0067  d*=-nan  (dopo: -nan)  n_wrap=0
 N=330 eta=0.0061  d*=-nan  (dopo: -nan)  n_wrap=0
 N=360 eta=0.0056  d*=-nan  (dopo: -nan)  n_wrap=0
 N=390 eta=0.0051  d*=-nan  (dopo: -nan)  n_wrap=0
+N=10 eta=0.2000  d*=-nan  (dopo: -nan)  n_wrap=0

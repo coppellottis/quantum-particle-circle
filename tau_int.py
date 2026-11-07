@@ -17,77 +17,77 @@ def tau_int(rho,c,n):
 
     return tau_star, M_star
 
-data = pd.read_csv("data/tau_int/N240_a0.0083_beta2.0000.csv")
-Q = np.array(data["Q"])
+# data = pd.read_csv("data/tau_int/N240_a0.0083_beta2.0000.csv")
+# Q = np.array(data["Q"])
 
-rho = emcee.autocorr.function_1d(Q)
-tau, M = tau_int(rho, 2, 240)
+# rho = emcee.autocorr.function_1d(Q)
+# tau, M = tau_int(rho, 2, 240)
 
-print(fr"tau: {tau}, N/tau={(1e6/tau)}")
+# print(fr"tau: {tau}, N/tau={(1e6/tau)}")
 
-# plt.rcParams.update({
-#     "font.family": "serif",
-#     "mathtext.fontset": "cm",
-#     "font.size": 20,
+plt.rcParams.update({
+    "font.family": "serif",
+    "mathtext.fontset": "cm",
+    "font.size": 20,
 
-#     "axes.labelsize": 20,
-#     "xtick.labelsize": 18,
-#     "ytick.labelsize": 18,
+    "axes.labelsize": 20,
+    "xtick.labelsize": 18,
+    "ytick.labelsize": 18,
 
-#     "axes.linewidth": 1.0,
+    "axes.linewidth": 1.0,
 
-#     "xtick.direction": "in",
-#     "ytick.direction": "in",
+    "xtick.direction": "in",
+    "ytick.direction": "in",
 
-#     "xtick.top": True,
-#     "ytick.right": True,
+    "xtick.top": True,
+    "ytick.right": True,
 
-#     "xtick.major.size": 6,
-#     "ytick.major.size": 6,
-#     "xtick.minor.size": 3,
-#     "ytick.minor.size": 3,
+    "xtick.major.size": 6,
+    "ytick.major.size": 6,
+    "xtick.minor.size": 3,
+    "ytick.minor.size": 3,
 
-#     "legend.fontsize": 20,
-# })
-
-
-# fig, ax = plt.subplots(figsize=(12,8))
-# N = np.arange(12,40,3)*10
+    "legend.fontsize": 20,
+})
 
 
-# for n in N:
-#     beta = 2
-#     eta = beta/n
-
-#     data = pd.read_csv(f"data/tau_int/N{n}_a{eta:.4f}_beta{beta:.4f}.csv")
-
-#     rho = emcee.autocorr.function_1d(np.array(data["Q"]))
-#     tau = 0.5 + np.cumsum(rho[1:])
-#     M = np.arange(1, len(rho))
-#     tau_star, M_star = tau_int(rho,2,n)
+fig, ax = plt.subplots(figsize=(12,8))
+N = np.arange(12,40,3)*10
 
 
-#     ax.plot(M, tau,'-.',label=fr"$N_t={n}$")
+for n in N:
+    beta = 2
+    eta = beta/n
 
-#     ax.scatter(M_star, tau_star,color=ax.lines[-1].get_color(), s=80, zorder=5)
+    data = pd.read_csv(f"data/PT_BHAT/N{n}_a{eta:.4f}_beta{beta:.4f}.csv")
 
-# ###########################################
-
-# ax.set_xlabel(fr"$M$")
-# ax.set_ylabel(r"$\tau_{int}^{Q}(M)/\tau_{int}^{Q}(M^\star)$")
-
-# ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
-
-# ax.grid(alpha=0.3)
-
-# ax.legend(loc="best")
-# ax.set_yscale("log")
-# ax.set_xscale("log")
-# ax.set_ylim(1,1e6)
-# ax.set_xlim(1,.35e6)
-
-# fig.tight_layout()
+    rho = emcee.autocorr.function_1d(np.array(data["Q"]))
+    tau = 0.5 + np.cumsum(rho[1:])
+    M = np.arange(1, len(rho))
+    tau_star, M_star = tau_int(rho,10,n)
 
 
-# fig.savefig("results/tau_int.pdf")
-# plt.show()
+    ax.plot(M, tau,'-.',label=fr"$N_t={n}$")
+
+    ax.scatter(M_star, tau_star,color=ax.lines[-1].get_color(), s=80, zorder=5)
+
+###########################################
+
+ax.set_xlabel(fr"$M$")
+ax.set_ylabel(r"$\tau_{int}^{Q}(M)/\tau_{int}^{Q}(M^\star)$")
+
+ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+
+ax.grid(alpha=0.3)
+
+ax.legend(loc="best")
+ax.set_yscale("log")
+ax.set_xscale("log")
+ax.set_ylim(10**(-.2),1e2)
+ax.set_xlim(1e0,1e3)
+
+fig.tight_layout()
+
+
+fig.savefig("results/tau_int_PT.pdf")
+plt.show()

@@ -39,7 +39,7 @@ def eigenvalue(n, theta, eta):
 
 def Z(theta, eta, Nt):
     Z = eigenvalue(0, theta, eta)**Nt
-    for n in range(1, 10):
+    for n in range(1, 100):
         pair = (eigenvalue(n, theta, eta)**Nt
                 + eigenvalue(-n, theta, eta)**Nt)
 
@@ -51,42 +51,42 @@ def Z(theta, eta, Nt):
 
 def P(Q, eta, N_t):
     N_theta = 1000
-    theta = np.linspace(-math.pi,math.pi, N_theta)
+    theta = np.linspace(-math.pi,math.pi, N_theta,endpoint=False)
     P_Q = 0
     for th in theta:
         P_Q += np.exp(1j*th*Q)*(Z(th,eta,N_t)/Z(0,eta,N_t))
     return P_Q/N_theta
 
 def Q_var(eta,N_t):
-    Q = np.arange(-10,11)
+    Q = np.arange(-30,31)
     var = 0
     for q in Q:
         var+= (q**2)*P(q,eta,N_t)
     return var
 
 def Q_2var(eta,N_t):
-    Q = np.arange(-10,11)
+    Q = np.arange(-30,31)
     var = 0
     for q in Q:
         var+= (q**4)*P(q,eta,N_t)
     return var
 
 def Q_mean(eta,N_t):
-    Q = np.arange(-10,11)
+    Q = np.arange(-30,31)
     mean = 0
     for q in Q:
         mean += q*P(q,eta,N_t)
     return mean
 
 def b2(eta,N_t):
-    return (Q_2var(eta,N_t)-3*(Q_var(eta,N_t)**2))/(12*Q_var(eta,N_t))
+    return -(Q_2var(eta,N_t)-3*(Q_var(eta,N_t)**2))/(12*Q_var(eta,N_t))
 
 
 eps = 1e-10
 theta = 0
 beta = 2
 
-Nt = [10, 12, 50, 100]
+Nt = np.arange(12,40,3)*10
 
 for n in Nt:
     print(f"Nt: {n}, <Q^2>: {Q_var(beta/n,n)}, <Q^4>: {Q_2var(beta/n,n)}, b2: {b2(beta/n,n)}\n")
